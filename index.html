@@ -350,46 +350,86 @@
                 .join('');
         }
 
-        // Assessment Handler
         document.getElementById('startAssessment').addEventListener('click', async () => {
-            analysisContainer.classList.add('hidden');
-            assessmentContainer.classList.remove('hidden');
-            
-            // Generate questions based on subjects
-            const questions = generateQuestions(studentData.subjects);
-            displayQuestions(questions);
+    analysisContainer.classList.add('hidden');
+    assessmentContainer.classList.remove('hidden');
+
+    // Fetch questions from the API
+    const questions = await generateQuestions(studentData.subjects);
+
+    // Display the questions in the UI
+    displayQuestions(questions);
+});
+
+
+        async function generateQuestions(subjects) {
+    // Categorize subjects into strong and weak areas
+    const strongSubjects = Object.entries(subjects)
+        .filter(([_, score]) => score >= 75)
+        .map(([subject, score]) => ({ subject, score }));
+
+    const weakSubjects = Object.entries(subjects)
+        .filter(([_, score]) => score < 75)
+        .map(([subject, score]) => ({ subject, score }));
+
+    // Prepare payload for the API request
+    const payload = {
+        strongSubjects,
+        weakSubjects,
+        request: "Generate 20 multiple-choice questions for the given subjects. Include both strong and weak areas to assess knowledge and improvement."
+    };
+
+    try {
+        // Send the request to the API
+        const response = await fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/ai', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer xjf940dHoLRuOToL4K1y7YtCeeJ3',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                messages: [
+                    {
+                        role: 'user',
+                        content: `Generate questions based on this data: ${JSON.stringify(payload)}`
+                    }
+                ]
+            })
         });
 
-        function generateQuestions(subjects) {
-            // Simplified question generation - in production, this would come from an API
-            return Object.keys(subjects).map(subject => ({
-                subject,
-                question: `Sample question for ${subject}?`,
-                options: ['Option A', 'Option B', 'Option C', 'Option D'],
-                correct: 0
-            }));
-        }
+        // Parse the response
+        const data = await response.json();
+
+        // Return the generated questions
+        return data.questions || [];
+    } catch (error) {
+        console.error('Error fetching questions:', error);
+        alert('Failed to generate questions. Please try again.');
+        return [];
+    }
+}
+
 
         function displayQuestions(questions) {
-            const container = document.getElementById('questionContainer');
-            container.innerHTML = questions.map((q, i) => `
-                <div class="bg-white p-4 rounded-lg shadow-sm">
-                    <p class="font-medium mb-3">${i + 1}. ${q.question}</p>
-                    <div class="space-y-2">
-                        ${q.options.map((opt, j) => `
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" name="q${i}" value="${j}" class="form-radio">
-                                <span>${opt}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('') + `
-                <button onclick="submitAssessment()" class="mt-6 w-full bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700 transition duration-300">
-                    Submit Assessment
-                </button>
-            `;
-        }
+    const container = document.getElementById('questionContainer');
+    container.innerHTML = questions.map((q, i) => `
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+            <p class="font-medium mb-3">${i + 1}. ${q.question}</p>
+            <div class="space-y-2">
+                ${q.options.map((opt, j) => `
+                    <label class="flex items-center space-x-2">
+                        <input type="radio" name="q${i}" value="${j}" class="form-radio">
+                        <span>${opt}</span>
+                    </label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('') + `
+        <button onclick="submitAssessment()" class="mt-6 w-full bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700 transition duration-300">
+            Submit Assessment
+        </button>
+    `;
+}
 
         function submitAssessment() {
             const responses = [...document.querySelectorAll('input[type="radio"]:checked')].map(input => parseInt(input.value));
