@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Performance & Monitoring System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3b82f6;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="bi bi-mortarboard-fill text-blue-600 text-2xl"></i>
+                    <span class="ml-2 text-xl font-semibold">Student Performance AI</span>
+                </div>
+                <div class="flex items-center">
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100">
+                        <i class="bi bi-moon-stars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="mainContent">
+            <!-- Step Progress -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between w-full max-w-2xl mx-auto">
+                    <div class="step active flex flex-col items-center">
+                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">1</div>
+                        <span class="mt-2 text-sm">Basic Info</span>
+                    </div>
+                    <div class="h-1 w-full bg-gray-200 mx-2">
+                        <div class="progress-bar h-full bg-blue-600" style="width: 0%"></div>
+                    </div>
+                    <div class="step flex flex-col items-center">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">2</div>
+                        <span class="mt-2 text-sm">Academics</span>
+                    </div>
+                    <div class="h-1 w-full bg-gray-200 mx-2">
+                        <div class="progress-bar h-full bg-blue-600" style="width: 0%"></div>
+                    </div>
+                    <div class="step flex flex-col items-center">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">3</div>
+                        <span class="mt-2 text-sm">Analysis</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Container -->
+            <div id="formContainer" class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+                <!-- Step 1: Basic Information -->
+                <form id="basicInfoForm" class="slide-in">
+                    <h2 class="text-2xl font-semibold mb-6">Student Information</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Gender</label>
+                            <select required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Education Level</label>
+                            <select id="educationLevel" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Select Level</option>
+                                <option value="ssc">SSC (10th)</option>
+                                <option value="intermediate">Intermediate</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700 transition duration-300">
+                            Continue
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Step 2: Academic Details -->
+                <form id="academicForm" class="hidden slide-in">
+                    <h2 class="text-2xl font-semibold mb-6">Academic Details</h2>
+                    <div id="subjectContainer" class="space-y-4">
+                        <!-- Dynamically populated based on education level -->
+                    </div>
+                    <div class="mt-6 flex space-x-4">
+                        <button type="button" class="back-btn w-1/2 bg-gray-200 text-gray-700 rounded-md py-2 px-4 hover:bg-gray-300 transition duration-300">
+                            Back
+                        </button>
+                        <button type="submit" class="w-1/2 bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700 transition duration-300">
+                            Generate Report
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Step 3: AI Analysis -->
+                <div id="analysisContainer" class="hidden slide-in">
+                    <h2 class="text-2xl font-semibold mb-6">AI Analysis Report</h2>
+                    <div id="loadingAnalysis" class="hidden">
+                        <div class="flex items-center justify-center space-x-2">
+                            <div class="loader"></div>
+                            <span>Generating your personalized report...</span>
+                        </div>
+                    </div>
+                    <div id="analysisResult" class="space-y-6">
+                        <!-- AI Analysis will be populated here -->
+                    </div>
+                    <div class="mt-6">
+                        <button id="startAssessment" class="w-full bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700 transition duration-300">
+                            Start Assessment
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Assessment Section -->
+                <div id="assessmentContainer" class="hidden slide-in">
+                    <h2 class="text-2xl font-semibold mb-6">Knowledge Assessment</h2>
+                    <div id="questionContainer" class="space-y-4">
+                        <!-- Questions will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Subject configurations
+        const subjects = {
+            ssc: ['Telugu', 'Hindi', 'English', 'Mathematics', 'Science', 'Social'],
+            intermediate: {
+                'MPC': ['Mathematics', 'Physics', 'Chemistry'],
+                'BiPC': ['Biology', 'Physics', 'Chemistry']
+            }
+        };
+
+        // Form state management
+        let currentStep = 1;
+        let studentData = {};
+
+        // DOM Elements
+        const basicInfoForm = document.getElementById('basicInfoForm');
+        const academicForm = document.getElementById('academicForm');
+        const analysisContainer = document.getElementById('analysisContainer');
+        const assessmentContainer = document.getElementById('assessmentContainer');
+        const educationLevel = document.getElementById('educationLevel');
+        const subjectContainer = document.getElementById('subjectContainer');
+        const loadingAnalysis = document.getElementById('loadingAnalysis');
+        const analysisResult = document.getElementById('analysisResult');
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const icon = themeToggle.querySelector('i');
+            icon.classList.toggle('bi-sun');
+            icon.classList.toggle('bi-moon-stars');
+        });
+
+        // Update Progress Bar
+        function updateProgress(step) {
+            const progressBars = document.querySelectorAll('.progress-bar');
+            const steps = document.querySelectorAll('.step');
+            
+            steps.forEach((s, index) => {
+                if (index + 1 <= step) {
+                    s.querySelector('div').classList.remove('bg-gray-200');
+                    s.querySelector('div').classList.add('bg-blue-600');
+                }
+            });
+
+            progressBars.forEach((bar, index) => {
+                if (index + 1 < step) {
+                    bar.style.width = '100%';
+                }
+            });
+        }
+
+        // Generate Subject Inputs
+        educationLevel.addEventListener('change', function() {
+            subjectContainer.innerHTML = '';
+            const level = this.value;
+
+            if (level === 'ssc') {
+                subjects.ssc.forEach(subject => {
+                    addSubjectInput(subject);
+                });
+            } else if (level === 'intermediate') {
+                // Add stream selection first
+                const streamDiv = document.createElement('div');
+                streamDiv.innerHTML = `
+                    <label class="block text-sm font-medium text-gray-700">Stream</label>
+                    <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required onchange="handleStreamChange(this.value)">
+                        <option value="">Select Stream</option>
+                        <option value="MPC">MPC</option>
+                        <option value="BiPC">BiPC</option>
+                    </select>
+                `;
+                subjectContainer.appendChild(streamDiv);
+            }
+        });
+
+        function handleStreamChange(stream) {
+            const subjectInputs = subjectContainer.querySelectorAll('.subject-input');
+            subjectInputs.forEach(input => {
+                if (!input.classList.contains('stream-select')) {
+                    input.remove();
+                }
+            });
+
+            subjects.intermediate[stream].forEach(subject => {
+                addSubjectInput(subject);
+            });
+        }
+
+        function addSubjectInput(subject) {
+            const div = document.createElement('div');
+            div.className = 'subject-input';
+            div.innerHTML = `
+                <label class="block text-sm font-medium text-gray-700">${subject}</label>
+                <input type="number" min="0" max="100" required 
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Enter marks out of 100"
+                    name="${subject.toLowerCase()}"
+                >
+            `;
+            subjectContainer.appendChild(div);
+        }
+
+        // Form Submissions
+        basicInfoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            studentData.name = e.target.querySelector('input[type="text"]').value;
+            studentData.gender = e.target.querySelector('select').value;
+            studentData.educationLevel = educationLevel.value;
+
+            basicInfoForm.classList.add('hidden');
+            academicForm.classList.remove('hidden');
+            currentStep = 2;
+            updateProgress(currentStep);
+        });
+
+        academicForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loadingAnalysis.classList.remove('hidden');
+            studentData.subjects = {};
+
+            const inputs = e.target.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                studentData.subjects[input.name] = parseInt(input.value);
+            });
+
+            // AI Analysis API Call
+            try {
+                const response = await fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/ai', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer xjf940dHoLRuOToL4K1y7YtCeeJ3',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [{
+                            role: 'user',
+                            content: [{
+                                type: 'text',
+                                text: `Analyze this student's performance and provide a detailed report with career suggestions: ${JSON.stringify(studentData)}`
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                displayAnalysis(data.message);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error generating analysis. Please try again.');
+            }
+
+            loadingAnalysis.classList.add('hidden');
+            academicForm.classList.add('hidden');
+            analysisContainer.classList.remove('hidden');
+            currentStep = 3;
+            updateProgress(currentStep);
+        });
+
+        function displayAnalysis(analysis) {
+            analysisResult.innerHTML = `
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-lg mb-2">Performance Analysis</h3>
+                    <p class="text-gray-700">${analysis}</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-lg mb-2">Strengths</h3>
+                        <ul class="list-disc list-inside text-gray-700">
+                            ${generateStrengths(studentData.subjects)}
+                        </ul>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-lg mb-2">Areas for Improvement</h3>
+                        <ul class="list-disc list-inside text-gray-700">
+                            ${generateImprovements(studentData.subjects)}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateStrengths(subjects) {
+            return Object.entries(subjects)
+                .filter(([_, score]) => score >= 75)
+                .map(([subject, _]) => `<li>${subject.charAt(0).toUpperCase() + subject.slice(1)}</li>`)
+                .join('');
+        }
+
+        function generateImprovements(subjects) {
+            return Object.entries(subjects)
+                .filter(([_, score]) => score < 75)
+                .map(([subject, _]) => `<li>${subject.charAt(0).toUpperCase() + subject.slice(1)}</li>`)
+                .join('');
+        }
+
+        // Assessment Handler
+        document.getElementById('startAssessment').addEventListener('click', async () => {
+            analysisContainer.classList.add('hidden');
+            assessmentContainer.classList.remove('hidden');
+            
+            // Generate questions based on subjects
+            const questions = generateQuestions(studentData.subjects);
+            displayQuestions(questions);
+        });
+
+        function generateQuestions(subjects) {
+            // Simplified question generation - in production, this would come from an API
+            return Object.keys(subjects).map(subject => ({
+                subject,
+                question: `Sample question for ${subject}?`,
+                options: ['Option A', 'Option B', 'Option C', 'Option D'],
+                correct: 0
+            }));
+        }
+
+        function displayQuestions(questions) {
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = questions.map((q, i) => `
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <p class="font-medium mb-3">${i + 1}. ${q.question}</p>
+                    <div class="space-y-2">
+                        ${q.options.map((opt, j) => `
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="q${i}" value="${j}" class="form-radio">
+                                <span>${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('') + `
+                <button onclick="submitAssessment()" class="mt-6 w-full bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700 transition duration-300">
+                    Submit Assessment
+                </button>
+            `;
+        }
+
+        function submitAssessment() {
+            const responses = [...document.querySelectorAll('input[type="radio"]:checked')].map(input => parseInt(input.value));
+            // Calculate score and show results
+            alert('Assessment submitted! Your responses have been recorded.');
+            // In production, this would save to a backend and show detailed results
+        }
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
