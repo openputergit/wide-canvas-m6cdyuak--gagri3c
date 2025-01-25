@@ -359,16 +359,26 @@
             const questions = generateQuestions(studentData.subjects);
             displayQuestions(questions);
         });
+function generateQuestions(subjects) {
+    // Filter subjects where the score is above 75
+    const strongSubjects = Object.entries(subjects)
+        .filter(([_, score]) => score >= 75)
+        .map(([subject]) => subject);
 
-        function generateQuestions(subjects) {
-            // Simplified question generation - in production, this would come from an API
-            return Object.keys(subjects).map(subject => ({
-                subject,
-                question: `Sample question for ${subject}?`,
-                options: ['Option A', 'Option B', 'Option C', 'Option D'],
-                correct: 0
-            }));
-        }
+    // Generate questions only for strong subjects
+    return strongSubjects.map(subject => ({
+        subject,
+        question: `What is a key concept in ${subject}?`,
+        options: [
+            `Basic principle of ${subject}`,
+            `Advanced topic in ${subject}`,
+            `Real-world example of ${subject}`,
+            `Application of ${subject}`
+        ],
+        correct: Math.floor(Math.random() * 4) // Random correct option
+    }));
+}
+
 
         function displayQuestions(questions) {
             const container = document.getElementById('questionContainer');
